@@ -1,0 +1,177 @@
+#!/bin/bash
+
+#----------------------------------------------------------------------------
+#
+#  configure script
+#
+#----------------------------------------------------------------------------
+
+if test x"$1" = x"-h" -o x"$1" = x"--help" ; then
+cat << EOF
+Usage: ./configure [options]
+
+options:
+  -h, --help                    print this message
+
+  --cxx=CXX                     use a defined compiler for compilation and linking [g++]
+
+  --extra-cxxflags=XCXXFLAGS    add XCFLAGS to CFLAGS
+  --extra-ldflags=XLDFLAGS      add XLDFLAGS to LDFLAGS
+  --extra-libs=XLIBS            add XLIBS to LIBS
+EOF
+exit 1
+fi
+
+#-----------------------------------------------------------------------------
+
+error_exit()
+{
+    echo error: $1
+    exit 1
+}
+
+cxx_check()
+{
+    echo 'int main(void){return 0;}' > conftest.cpp
+    $CXX conftest.cpp $1 $2 -o conftest 2> /dev/null
+    ret=$?
+    rm -f conftest*
+    return $ret
+}
+
+cpp11_check()
+{
+    echo 'int main(void){return 0;}' > conftest.cpp
+    $CXX conftest.cpp $1 -o conftest 2> /dev/null
+    ret=$?
+    rm -f conftest*
+    return $ret
+}
+
+#-----------------------------------------------------------------------------
+
+rm -f config.* .depend conftest*
+
+
+echo
+echo generating config.mak ...
+echo
+
+
+SRCDIR="$(cd $(dirname $0); pwd)"
+test "$SRCDIR" = "$(pwd)" && SRCDIR=.
+
+CXX="g++"
+
+CXXFLAGS="-Wall -Ofast -std=c++11"
+LDFLAGS=""
+LIBS="-lboost_program_options"
+
+EXT=""
+
+for opt; do
+    optarg="${opt#*=}"
+    case "$opt" in
+        --cxx=*)
+            CXX="$optarg"
+            ;;
+        --extra-cxxflags=*)
+            XCXXFLAGS="$optarg"
+            ;;
+        --extra-ldflags=*)
+            XLDFLAGS="$optarg"
+            ;;
+        --extra-libs=*)
+            XLIBS="$optarg"
+            ;;
+        *)
+            error_exit "unknown option $opt"
+            ;;
+    esac
+done
+
+
+for f in "${CXX}"; do
+    test -n "$(which $f 2> /dev/null)" || error_exit "$f is not executable"
+done
+
+case "$CXX" in
+    *clang++*)
+        if cpp11_check "-std=c++11 -stdlib=libc++"; then
+            CXXFLAGS="-Wall -O3 -std=c++11 -stdlib=libc++"
+        elif cpp11_check "-std=c++0x -stdlib=libc++"; then
+            CXXFLAGS="-Wall -O3 -std=c++0x -stdlib=libc++"
+        else
+            error_exit "your $CXX doesn't support C++11"
+        fi
+        ;;
+    *g++*)
+        if cpp11_check "-std=c++11"; then
+            CXXFLAGS="-Wall -Ofast -std=c++11"
+        elif cpp11_check "-std=c++0x"; then
+            CXXFLAGS="-Wall -Ofast -std=c++0x"
+        else
+            error_exit "your $CXX doesn't support C++11"
+        fi
+        ;;
+    *)
+        error_exit "unknown compiler $CXX"
+        ;;
+esac
+
+
+CXXFLAGS="$CXXFLAGS $XCXXFLAGS"
+LDFLAGS="$LDFLAGS $XLDFLAGS"
+LIBS="$LIBS $XLIBS"
+
+if ! cxx_check "$CXXFLAGS" "$LDFLAGS"; then
+    error_exit "invalid CXXFLAGS/LDFLAGS"
+fi
+
+
+TARGET_OS=$($CXX -dumpmachine | tr '[A-Z]' '[a-z]')
+case "$TARGET_OS" in
+    *mingw*)
+        EXT=".exe"
+        ;;
+    *cygwin*)
+        EXT=".exe"
+        ;;
+esac
+
+
+#=============================================================================
+# Notation for developpers.
+# Be sure to modified this block when you add/delete source files.
+SRCS="Main.cpp Lda.cpp DataSet.cpp"
+PROG="lda"${EXT}
+#=============================================================================
+
+cat >> config.h << EOF
+EOF
+
+
+cat >> config.mak << EOF
+SRCS=$SRCS
+SRCDIR=$SRCDIR
+CXX=$CXX
+CXXFLAGS=$CXXFLAGS
+LDFLAGS=$LDFLAGS
+LIBS=$LIBS
+PROG=$PROG
+EOF
+
+
+cat >> config.mak2 << EOF
+EOF
+
+
+cat << EOF
+
+configure finished
+
+  type 'make'             : compile library and tools
+
+EOF
+
+exit 0
