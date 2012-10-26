@@ -52,8 +52,7 @@ void DataSet::load(const char *filename) {
     // the following lines : docID vocab wordID count
     int m, v, cnt;
     std::string buff;
-    while (!fin.eof()) {
-        fin >> m >> buff >> v >> cnt;
+    while ( fin >> m >> buff >> v >> cnt ) {
         for (int i = 0; i < cnt; i++) {
             docs[m-1].push_back(v);
             vocab[m-1].push_back(buff);
