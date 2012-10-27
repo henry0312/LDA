@@ -122,7 +122,7 @@ void Lda::inference() {
 }
 
 /**
- * compute Perplexity
+ * Compute Perplexity
  */
 double Lda::perplexity() {
     /*
@@ -187,5 +187,42 @@ void Lda::learn(const int iteration) {
     auto s = elapsed.count() * 0.001;
     int m = s / 60;
     int h = m / 60;
-    cout << "Elapsed: " << h << "h " << m << "m " << s << "s" << endl;
+    cout << "Elapsed: " << h << "h " << m << "m " << s << "s" << endl << endl;
+
+    // Dump
+    dump();
+}
+
+/**
+ * Dump
+ *
+ * Print topic-word distribution
+ */
+void Lda::dump() {
+    // Insert topic-word distribution to vector
+    std::vector<std::vector<std::pair<int, double>>> topic_word;
+    topic_word.resize(K);
+    for (int z = 0; z < K; z++) {
+        topic_word[z].resize(dataset.V);
+        for (int t = 0; t < dataset.V; t++) {
+            topic_word[z][t] = std::make_pair(t, phi_z_t[z][t]);
+        }
+    }
+
+    // Descending sort
+    for (int z = 0; z < K; z++) {
+        std::sort( begin(topic_word[z]), end(topic_word[z]),
+                    [](const std::pair<int, double> &a, const std::pair<int, double> &b)
+                    -> bool { return a.second > b.second; } );
+    }
+
+    // Print
+    for (int z = 0; z < K; z++) {
+        printf("Topic: %d (%d words)\n", z, n_z[z]);
+        for (int i = 0; i < 10; i++) {
+            auto pair = topic_word[z][i];
+            printf("%d: %f (%d)\n", pair.first, pair.second, n_z_t[z][pair.first]);
+        }
+        std::cout << std::endl;
+    }
 }

@@ -17,7 +17,9 @@
 
 #include <iostream>
 #include <vector>
+#include <utility>
 #include <string>
+#include <algorithm>
 #include <random>
 #include <chrono>
 #include <cmath>
@@ -51,6 +53,7 @@ public:
     void inference();
     double perplexity();
     void learn(const int iteration);
+    void dump();
 };
 
 #endif
