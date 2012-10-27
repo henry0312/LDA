@@ -48,7 +48,8 @@ class Lda {
 
     void init();
 public:
-    Lda(const int K, double alpha, double beta, const char *train, const char *test);
+    Lda(const int K, double alpha, double beta,
+            const char *train, const char *test, const char *vocab);
     virtual ~Lda() = default;
     void inference();
     double perplexity();

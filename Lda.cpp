@@ -23,8 +23,9 @@
  * @param const char *train Training set
  * @param const char *test Test set
  */
-Lda::Lda(const int K, double alpha, double beta, const char *train, const char *test)
-    :dataset(train), testset(test), K(K), alpha(alpha), beta(beta), gen(rd())
+Lda::Lda(const int K, double alpha, double beta,
+        const char *train, const char *test, const char *vocab)
+    :dataset(train, vocab), testset(test), K(K), alpha(alpha), beta(beta), gen(rd())
 {
     init();
 }
@@ -220,8 +221,9 @@ void Lda::dump() {
     for (int z = 0; z < K; z++) {
         printf("Topic: %d (%d words)\n", z, n_z[z]);
         for (int i = 0; i < 10; i++) {
-            auto pair = topic_word[z][i];
-            printf("%d: %f (%d)\n", pair.first, pair.second, n_z_t[z][pair.first]);
+            auto t = topic_word[z][i].first;
+            auto phi = topic_word[z][i].second;
+            printf("%s: %f (%d)\n", dataset.vocab[t].c_str(), phi, n_z_t[z][t]);
         }
         std::cout << std::endl;
     }

@@ -31,14 +31,15 @@ int main(int argc, char const* argv[])
         ("beta,b",      value<double>()->default_value(0.5),    "beta")
         ("iteration,i", value<int>()->default_value(10),        "the number of times of inference")
         ("train",       value<string>(),                        "Training set")
-        ("test",        value<string>(),                        "Test set");
+        ("test",        value<string>(),                        "Test set")
+        ("vocab",       value<string>(),                        "Vocabulary");
 
     // Parse the arguments and Store the result in vm.
     variables_map vm;
     store(parse_command_line(argc, argv, opt), vm);
     notify(vm);
 
-    if ( vm.count("help") || !vm.count("train") || !vm.count("test") ) {
+    if ( vm.count("help") || !vm.count("train") || !vm.count("test") || !vm.count("vocab") ) {
         cout << opt << endl;
         return 1;
     }
@@ -50,9 +51,10 @@ int main(int argc, char const* argv[])
     const int i     = vm["iteration"].as<int>();
     string train    = vm["train"].as<string>();
     string test     = vm["test"].as<string>();
+    string vocab    = vm["vocab"].as<string>();
 
     // LDA
-    Lda lda(K, alpha, beta, train.c_str(), test.c_str());
+    Lda lda(K, alpha, beta, train.c_str(), test.c_str(), vocab.c_str());
     lda.learn(i);
 
     return 0;

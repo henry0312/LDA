@@ -22,16 +22,18 @@
 
 struct DataSet {
     std::vector<std::vector<int>> docs;
-    std::vector<std::vector<std::string>> vocab;
+    std::vector<std::string> vocab;
     std::vector<int> n_m;
     int M;
     int V;
     int N;
 
-    DataSet(const char *filename);
+    DataSet(const char *dataset);
+    DataSet(const char *dataset, const char *vocab);
     virtual ~DataSet() = default;
 private:
-    void load(const char *filename);
+    void loadDataSet(const char *filename);
+    void loadVocabulary(const char *filename);
 };
 
 #endif

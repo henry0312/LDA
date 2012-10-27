@@ -17,12 +17,29 @@
 /**
  * Constructor
  *
- * @param const char *filename load file name
+ * Load DataSet
+ *
+ * @param const char *dataset DataSet's filename
  */
-DataSet::DataSet(const char *filename)
+DataSet::DataSet(const char *dataset)
     :M(0), V(0), N(0)
 {
-    load(filename);
+    loadDataSet(dataset);
+}
+
+/**
+ * Constructor
+ *
+ * Load DataSet and Vocabulary
+ *
+ * @param const char *dataset DataSet's filename
+ * @param const char *vocab Vocabulary's filename
+ */
+DataSet::DataSet(const char *dataset, const char *vocab)
+    :M(0), V(0), N(0)
+{
+    loadDataSet(dataset);
+    loadVocabulary(vocab);
 }
 
 /**
@@ -30,7 +47,7 @@ DataSet::DataSet(const char *filename)
  *
  * @param const char *filename open *filename
  */
-void DataSet::load(const char *filename) {
+void DataSet::loadDataSet(const char *filename) {
     std::ifstream fin(filename);
     if (!fin) {
         std::cerr << "Can't open the file: " << filename << std::endl;
@@ -40,7 +57,6 @@ void DataSet::load(const char *filename) {
     // the 1st line : the number of docs
     fin >> M;
     docs.resize(M);
-    vocab.resize(M);
     n_m.resize(M, 0);
 
     // the 2nd line : the number of vocabulary
@@ -51,13 +67,31 @@ void DataSet::load(const char *filename) {
 
     // the following lines : docID vocab wordID count
     int m, v, cnt;
-    std::string buff;
-    while ( fin >> m >> buff >> v >> cnt ) {
+    while ( fin >> m >> v >> cnt ) {
         for (int i = 0; i < cnt; i++) {
             docs[m-1].push_back(v);
-            vocab[m-1].push_back(buff);
             n_m[m-1]++;
         }
+    }
+
+    fin.close();
+}
+
+/**
+ * Loac Vocabulary
+ *
+ * @param const char *filename open *filename
+ */
+void DataSet::loadVocabulary(const char *filename) {
+    std::ifstream fin(filename);
+    if (!fin) {
+        std::cerr << "Can't open the file: " << filename << std::endl;
+        exit(1);
+    }
+
+    std::string buff;
+    while ( fin >> buff ) {
+        vocab.push_back(buff);
     }
 
     fin.close();

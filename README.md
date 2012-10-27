@@ -8,11 +8,18 @@ See Wikipedia, [Latent Dirichlet allocation](http://en.wikipedia.org/wiki/Latent
 # Usage
 See `--help`.
 
-# DataSet Format
+# Data Set
+## Format
 The 1st line:        the number of docs  
 The 2nd line:        the number of vocabulary  
-The 3rd line:        the number of words  
-The following lines: docID vocab wordID count
+The 3rd line:        the number of words (\*NOTICE\* not NNZ, the number of nonzero counts in the bag-of-words)  
+The following lines: docID wordID count
+
+## Vocabulary
+line number = wordID
+
+## For example
+[UCI Machine Learning Repository: Bag of Words Data Set](http://archive.ics.uci.edu/ml/datasets/Bag+of+Words)
 
 # Licence
 MIT License  
