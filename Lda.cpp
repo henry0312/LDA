@@ -36,14 +36,14 @@ Lda::Lda(const int K, double alpha, double beta,
 void Lda::init() {
     // n_mz
     n_m_z.resize(dataset.M);
-    for (int m = 0; m < dataset.M; m++) {
-        n_m_z[m].resize(K, 0);
+    for (auto& n_z : n_m_z) {
+        n_z.resize(K, 0);
     }
 
     // n_zt
     n_z_t.resize(K);
-    for (int z = 0; z < K; z++) {
-        n_z_t[z].resize(dataset.V, 0);
+    for (auto& n_t : n_z_t) {
+        n_t.resize(dataset.V, 0);
     }
 
     // n_z
@@ -52,13 +52,12 @@ void Lda::init() {
     /*
      * Topics
      */
-    int z;
     z_m_n.resize(dataset.M);
     std::uniform_int_distribution<> dis(0, K-1);
     for (int m = 0; m < dataset.M; m++) {
         z_m_n[m].resize(dataset.n_m[m]);
         for (int n = 0; n < dataset.n_m[m]; n++) {
-            z = dis(gen);
+            auto z = dis(gen);
             z_m_n[m][n] = z;
             n_m_z[m][z]++;
             n_z_t[z][dataset.docs[m][n] - 1]++;
@@ -68,16 +67,15 @@ void Lda::init() {
 
     // phi
     phi_z_t.resize(K);
-    for (int z = 0; z < K; z++) {
-        phi_z_t[z].resize(dataset.V);
+    for (auto& phi_t : phi_z_t) {
+        phi_t.resize(dataset.V);
     }
 
     // theta
     theta_m_z.resize(dataset.M);
-    for (int m = 0; m < dataset.M; m++) {
-        theta_m_z[m].resize(K);
+    for (auto& theta_z : theta_m_z) {
+        theta_z.resize(K);
     }
-
 }
 
 /**
