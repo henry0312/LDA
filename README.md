@@ -3,7 +3,8 @@ See Wikipedia, [Latent Dirichlet allocation](http://en.wikipedia.org/wiki/Latent
 
 # System Requirements
 * Compiler that supports C++11
-* Boost C++ Libraries
+* Boost C++ Libraries  
+\*NOTICE\* Boost C++ Libraries shoud be built with C++11 compiler.
 
 # Usage
 See `--help`.
