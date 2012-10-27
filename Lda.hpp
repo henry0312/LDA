@@ -30,9 +30,9 @@ class Lda {
     double alpha;
     double beta;
 
-    std::vector<std::vector<double>> n_m_z;
-    std::vector<std::vector<double>> n_z_t;
-    std::vector<double> n_z;
+    std::vector<std::vector<int>> n_m_z;
+    std::vector<std::vector<int>> n_z_t;
+    std::vector<int> n_z;
     std::vector<std::vector<int>> z_m_n;
 
     std::vector<std::vector<double>> phi_z_t;
