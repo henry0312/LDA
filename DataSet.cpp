@@ -65,7 +65,7 @@ void DataSet::loadDataSet(const char *filename) {
     // the 3rd line : the number of words
     fin >> N;
 
-    // the following lines : docID vocab wordID count
+    // the following lines : docID wordID count
     int m, v, cnt;
     while ( fin >> m >> v >> cnt ) {
         for (int i = 0; i < cnt; i++) {
