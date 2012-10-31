@@ -182,11 +182,11 @@ void Lda::learn(const int iteration) {
     auto end = std::chrono::system_clock::now();
 
     // Elapsed time
-    auto elapsed = std::chrono::duration_cast< std::chrono::milliseconds >(end - start);
-    auto s = elapsed.count() * 0.001;
-    int m = s / 60;
-    int h = m / 60;
-    cout << "Elapsed: " << h << "h " << m << "m " << s << "s" << endl << endl;
+    auto ms = std::chrono::duration_cast< std::chrono::milliseconds >(end - start).count();
+    int s = ms * 0.001; ms -= s * 1000;
+    int m = s / 60; s %= 60;
+    int h = m / 60; m %= 60;
+    cout << "Elapsed time: " << h << "h " << m << "m " << s << "." << ms << "s\n" << endl;
 
     // Dump
     dump();
