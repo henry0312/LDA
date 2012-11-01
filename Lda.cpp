@@ -80,44 +80,53 @@ void Lda::init() {
 
 /**
  * Inference
- *
- * perform Gibbs sampling once
  */
 void Lda::inference() {
-    std::vector<double> p_z(K);
     for (int m = 0; m < dataset.M; m++) {
-        auto z_n = z_m_n[m];
         for (int n = 0; n < dataset.n_m[m]; n++) {
-            // word
-            auto t = dataset.docs[m][n];
-            // old topic
-            auto old_z = z_n[n];
-
-            /*
-             * Delete old topic
-             */
-            n_m_z[m][old_z]--;
-            n_z_t[old_z][t - 1]--;
-            n_z[old_z]--;
-
-            /*
-             * Gibbs sampling
-             */
-            for (int z = 0; z < K; z++) {
-                p_z[z] = (alpha + n_m_z[m][z]) * (beta + n_z_t[z][t - 1]) / (n_z[z] + dataset.V * beta);
-            }
-            std::discrete_distribution<> dis(begin(p_z), end(p_z));
-            auto new_z = dis(gen);
-
-            /*
-             * Update topic
-             */
-            z_m_n[m][n] = new_z;
-            n_m_z[m][new_z]++;
-            n_z_t[new_z][t - 1]++;
-            n_z[new_z]++;
+            sampling_z(m, n);
         }
     }
+}
+
+/**
+ * Sampling z_mn
+ *
+ * Perform Gibbs sampling once
+ *
+ * @param const int m the mth doc
+ * @param const int n the nth word
+ */
+void Lda::sampling_z(const int m, const int n) {
+    // word
+    const int t = dataset.docs[m][n];
+    // old topic
+    const int old_z = z_m_n[m][n];
+
+    /*
+     * Delete old topic
+     */
+    n_m_z[m][old_z]--;
+    n_z_t[old_z][t - 1]--;
+    n_z[old_z]--;
+
+    /*
+     * Gibbs sampling
+     */
+    std::vector<double> p_z(K);
+    for (int z = 0; z < K; z++) {
+        p_z[z] = (alpha + n_m_z[m][z]) * (beta + n_z_t[z][t - 1]) / (n_z[z] + dataset.V * beta);
+    }
+    std::discrete_distribution<> dis(begin(p_z), end(p_z));
+    int new_z = dis(gen);
+
+    /*
+     * Update topic
+     */
+    z_m_n[m][n] = new_z;
+    n_m_z[m][new_z]++;
+    n_z_t[new_z][t - 1]++;
+    n_z[new_z]++;
 }
 
 /**
@@ -163,7 +172,7 @@ double Lda::perplexity() {
  *
  * Perform Gibbs sampling specified number of times and Calculate perplexity with each cycle
  *
- * @param int iteration the number of times of inference
+ * @param const int iteration the number of times of inference
  */
 void Lda::learn(const int iteration) {
     using namespace std;

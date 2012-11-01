@@ -40,17 +40,17 @@ class Lda {
     std::vector<std::vector<double>> phi_z_t;
     std::vector<std::vector<double>> theta_m_z;
 
-    /*
-     * random number generator
-     */
+    // random number generator
     std::random_device rd;
     std::mt19937 gen;
 
     void init();
+    void sampling_z(const int m, const int n);
+
 public:
     Lda(const int K, double alpha, double beta,
             const char *train, const char *test, const char *vocab);
-    virtual ~Lda() = default;
+    ~Lda() = default;
     void inference();
     double perplexity();
     void learn(const int iteration);
