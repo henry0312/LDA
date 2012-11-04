@@ -15,6 +15,8 @@ options:
 
   --cxx=CXX                     use a defined compiler for compilation and linking [g++]
 
+  --enable-debug                compile with debug symbols
+
   --extra-cxxflags=XCXXFLAGS    add XCFLAGS to CFLAGS
   --extra-ldflags=XLDFLAGS      add XLDFLAGS to LDFLAGS
   --extra-libs=XLIBS            add XLIBS to LIBS
@@ -35,7 +37,7 @@ cxx_check()
     echo 'int main(void){return 0;}' > conftest.cpp
     $CXX conftest.cpp $1 $2 -o conftest 2> /dev/null
     ret=$?
-    rm -f conftest*
+    rm -rf conftest*
     return $ret
 }
 
@@ -44,7 +46,7 @@ cpp11_check()
     echo 'int main(void){return 0;}' > conftest.cpp
     $CXX conftest.cpp $1 -o conftest 2> /dev/null
     ret=$?
-    rm -f conftest*
+    rm -rf conftest*
     return $ret
 }
 
@@ -67,6 +69,7 @@ CXXFLAGS="-Wall -Ofast -std=c++11"
 LDFLAGS=""
 LIBS="-lboost_program_options"
 
+DEBUG=""
 EXT=""
 
 for opt; do
@@ -74,6 +77,9 @@ for opt; do
     case "$opt" in
         --cxx=*)
             CXX="$optarg"
+            ;;
+        --enable-debug)
+            DEBUG="enabled"
             ;;
         --extra-cxxflags=*)
             XCXXFLAGS="$optarg"
@@ -98,18 +104,18 @@ done
 case "$CXX" in
     *clang++*)
         if cpp11_check "-std=c++11 -stdlib=libc++"; then
-            CXXFLAGS="-Wall -O3 -std=c++11 -stdlib=libc++"
+            CXXFLAGS="-Wall -std=c++11 -stdlib=libc++"
         elif cpp11_check "-std=c++0x -stdlib=libc++"; then
-            CXXFLAGS="-Wall -O3 -std=c++0x -stdlib=libc++"
+            CXXFLAGS="-Wall -std=c++0x -stdlib=libc++"
         else
             error_exit "your $CXX doesn't support C++11"
         fi
         ;;
     *g++*)
         if cpp11_check "-std=c++11"; then
-            CXXFLAGS="-Wall -Ofast -std=c++11"
+            CXXFLAGS="-Wall -std=c++11"
         elif cpp11_check "-std=c++0x"; then
-            CXXFLAGS="-Wall -Ofast -std=c++0x"
+            CXXFLAGS="-Wall -std=c++0x"
         else
             error_exit "your $CXX doesn't support C++11"
         fi
@@ -119,6 +125,18 @@ case "$CXX" in
         ;;
 esac
 
+if test -n "$DEBUG"; then
+    CXXFLAGS="$CXXFLAGS -g -O0"
+else
+    case "$CXX" in
+        *clang++*)
+            CXXFLAGS="$CXXFLAGS -O3"
+            ;;
+        *g++*)
+            CXXFLAGS="$CXXFLAGS -Ofast"
+            ;;
+    esac
+fi
 
 CXXFLAGS="$CXXFLAGS $XCXXFLAGS"
 LDFLAGS="$LDFLAGS $XLDFLAGS"
