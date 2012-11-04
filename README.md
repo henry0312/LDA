@@ -1,10 +1,13 @@
 # What is LDA?
 See Wikipedia, [Latent Dirichlet allocation](http://en.wikipedia.org/wiki/Latent_Dirichlet_allocation).
 
+# What is HDP?
+See Wikipedia, [Hierarchical Dirichlet process](http://en.wikipedia.org/wiki/Hierarchical_Dirichlet_process).
+
 # System Requirements
 * Compiler that supports C++11
 * Boost C++ Libraries  
-\*NOTICE\* Boost C++ Libraries shoud be built with C++11 compiler.
+\*NOTICE\* Boost C++ Libraries shoud be built with the C++11 compiler.
 
 # Usage
 See `--help`.

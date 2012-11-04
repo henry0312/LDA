@@ -1,23 +1,42 @@
-.PHONY: all clean distclean
-
+.PHONY: all clean distclean dep depend
 
 include config.mak
 
 OBJS=$(SRCS:%.cpp=%.o)
 
+LDA_OBJS=$(LDA_SRCS:%.cpp=%.o)
+HDPLDA_OBJS=$(HDPLDA_SRCS:%.cpp=%.o)
 
-include config.mak2
+all: $(TOOLS)
 
-all: $(PROG)
+lda: $(LDA_OBJS)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(LIBS) -o $@$(EXT) $^
 
-$(PROG): $(OBJS)
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(LIBS) -o $@ $^
+hdplda: $(HDPLDA_OBJS)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(LIBS) -o $@$(EXT) $^
 
-%.o: %.cpp
+%.o: %.cpp .depend
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 clean:
-	rm -f $(PROG) $(OBJS)
+	$(RM) *.o *.exe $(TOOLS) .depend
 
 distclean: clean
-	rm -f config.*
+	$(RM) config.*
+
+dep: .depend
+
+depend: .depend
+
+ifneq ($(wildcard .depend),)
+include .depend
+endif
+
+#The dependency of each source file is solved automatically by follows.
+.depend: config.mak
+	@$(RM) .depend
+	@$(foreach SRC, $(SRCS:%=$(SRCDIR)/%), $(CXX) $(SRC) $(CXXFLAGS) -g0 -MT $(SRC:$(SRCDIR)/%.cpp=%.o) -MM >> .depend;)
+
+config.mak:
+	./configure
+

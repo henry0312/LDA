@@ -143,35 +143,37 @@ esac
 #=============================================================================
 # Notation for developpers.
 # Be sure to modified this block when you add/delete source files.
-SRCS="Main.cpp Lda.cpp DataSet.cpp"
-PROG="lda"${EXT}
+SRCS="Lda.cpp LdaMain.cpp HdpLda.cpp HdpLdaMain.cpp DataSet.cpp"
+LDA_SRCS="Lda.cpp LdaMain.cpp DataSet.cpp"
+HDPLDA_SRCS="HdpLda.cpp HdpLdaMain.cpp DataSet.cpp"
+TOOLS="lda hdplda"
 #=============================================================================
 
-cat >> config.h << EOF
+cat >> config.mak << EOF
+SRCDIR = $SRCDIR
+CXX = $CXX
+CXXFLAGS = $CXXFLAGS
+LDFLAGS = $LDFLAGS
+LIBS = $LIBS
 EOF
 
+cat config.mak
 
 cat >> config.mak << EOF
-SRCS=$SRCS
-SRCDIR=$SRCDIR
-CXX=$CXX
-CXXFLAGS=$CXXFLAGS
-LDFLAGS=$LDFLAGS
-LIBS=$LIBS
-PROG=$PROG
+SRCS = $SRCS
+LDA_SRCS = $LDA_SRCS
+HDPLDA_SRCS = $HDPLDA_SRCS
+TOOLS = $TOOLS
+EXT = $EXT
 EOF
-
-
-cat >> config.mak2 << EOF
-EOF
-
 
 cat << EOF
 
 configure finished
 
-  type 'make'             : compile library and tools
-
+  type 'make'               : compile all tools
+  type 'make lda'           : compile LDA tool
+  type 'make hdplda'        : compile HDP-LDA tool
 EOF
 
 exit 0

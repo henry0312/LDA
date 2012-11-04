@@ -1,7 +1,11 @@
 .DS_Store
 *.swp
+*~
+*.rej
 config.*
 .depend
 conftest*
 *.o
+*.exe
 lda
+hdplda
