@@ -17,15 +17,16 @@
 /**
  * Constructor
  *
- * @param const int K the number of Topics
- * @param int alpha alpha
- * @param int beta beta
+ * @param const int _K the number of Topics
+ * @param double _alpha alpha
+ * @param double _beta beta
  * @param const char *train Training set
  * @param const char *test Test set
+ * @param const char *vocab Vocabulary
  */
-Lda::Lda(const int K, double alpha, double beta,
+Lda::Lda(const int _K, double _alpha, double _beta,
         const char *train, const char *test, const char *vocab)
-    :dataset(train, vocab), testset(test), K(K), alpha(alpha), beta(beta), gen(rd())
+    :dataset(train, vocab), testset(test), K(_K), alpha(_alpha), beta(_beta), gen(rd())
 {
     init();
 }

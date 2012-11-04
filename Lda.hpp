@@ -48,7 +48,7 @@ class Lda {
     void sampling_z(const int m, const int n);
 
 public:
-    Lda(const int K, double alpha, double beta,
+    Lda(const int _K, double _alpha, double _beta,
             const char *train, const char *test, const char *vocab);
     ~Lda() = default;
     void inference();
