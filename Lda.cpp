@@ -228,7 +228,7 @@ void Lda::dump() {
     // Print
     for (int z = 0; z < K; z++) {
         printf("Topic: %d (%d words)\n", z, n_z[z]);
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < (n_z[z] > 10 ? 10 : n_z[z]); i++) {
             auto t = topic_word[z][i].first;
             auto phi = topic_word[z][i].second;
             printf("%s: %f (%d)\n", dataset.vocab[t].c_str(), phi, n_z_t[z][t]);
