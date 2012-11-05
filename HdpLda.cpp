@@ -589,10 +589,10 @@ void HdpLda::update_gamma() {
     const double eta = beta_dist(gen);
 
     const int k = count_topics();
-    const double pi = (gamma_a + k - 1 ) / m * (gamma_b - std::log(eta));
+    const double pi = (gamma_a + k - 1) / ( (gamma_a + k - 1) + m * (gamma_b - std::log(eta)) );
 
     std::gamma_distribution<> gamma_dist1( gamma_a + k, 1.0 / (gamma_b - std::log(eta)) );
     std::gamma_distribution<> gamma_dist2(  gamma_a + k - 1, 1.0 / (gamma_b - std::log(eta)) );
-    gamma = pi * gamma_dist1(gen) + gamma_dist2(gen);
+    gamma = pi * gamma_dist1(gen) + (1 - pi) * gamma_dist2(gen);
 }
 
