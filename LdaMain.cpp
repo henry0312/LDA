@@ -27,12 +27,13 @@ int main(int argc, char const* argv[])
     opt.add_options()
         ("help,h",                                              "show help")
         ("topic,K",     value<int>()->default_value(30),        "the number of topics")
-        ("alpha,a",     value<double>()->default_value(0.5),    "alpha")
-        ("beta,b",      value<double>()->default_value(0.5),    "beta")
+        ("alpha,a",     value<double>()->default_value(0.1),    "alpha")
+        ("beta,b",      value<double>()->default_value(0.01),   "beta")
         ("iteration,i", value<int>()->default_value(10),        "the number of times of inference")
         ("train",       value<string>(),                        "Training set")
         ("test",        value<string>(),                        "Test set")
-        ("vocab",       value<string>(),                        "Vocabulary");
+        ("vocab",       value<string>(),                        "Vocabulary")
+        ("asymmetry",                                           "Use Asymmetry Dirichlet distribution");
 
     // Parse the arguments and Store the result in vm.
     variables_map vm;
@@ -44,17 +45,32 @@ int main(int argc, char const* argv[])
         return 1;
     }
 
-    // Set the parameters
+    /*
+     * Set the parameters
+     */
     const int K     = vm["topic"].as<int>();
-    double alpha    = vm["alpha"].as<double>();
     double beta     = vm["beta"].as<double>();
     const int i     = vm["iteration"].as<int>();
     string train    = vm["train"].as<string>();
     string test     = vm["test"].as<string>();
     string vocab    = vm["vocab"].as<string>();
+    // alpha
+    double alpha = 0.1;
+    if (vm.count("alpha")) {
+        alpha = vm["alpha"].as<double>();
+    } else if (K > 50) {
+        alpha = 50.0 / K;
+    }
+    // asymmetry
+    bool asymmetry;
+    if (vm.count("asymmetry")) {
+        asymmetry = true;
+    } else {
+        asymmetry = false;
+    }
 
     // LDA
-    Lda lda(K, alpha, beta, train.c_str(), test.c_str(), vocab.c_str());
+    Lda lda(K, alpha, beta, train.c_str(), test.c_str(), vocab.c_str(), asymmetry);
     lda.learn(i);
 
     return 0;

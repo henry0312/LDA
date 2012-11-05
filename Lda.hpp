@@ -23,13 +23,21 @@
 #include <random>
 #include <chrono>
 #include <cmath>
+#include <boost/math/special_functions/digamma.hpp>
 #include "DataSet.hpp"
 
+/**
+ * Latent Dirichlet Allocation
+ *
+ * @see David M. Blei, Andrew Y. Ng, and Michael I. Jordan. Latent Dirichlet allocation. Journal of Machine Learning Research, 3:993-1022, January 2003.
+ * @see Thomas P. Minka. Estimating a Dirichlet distribution. (2000; revised 2003, 2009, 2012)
+ * @see Thomas L. Griffiths, and Mark Steyvers. Finding scientific topics.
+ */
 class Lda {
     DataSet dataset;
     DataSet testset;
     const int K;
-    double alpha;
+    std::vector<double> alpha_z;
     double beta;
 
     std::vector<std::vector<int>> n_m_z;
@@ -40,16 +48,20 @@ class Lda {
     std::vector<std::vector<double>> phi_z_t;
     std::vector<std::vector<double>> theta_m_z;
 
+    bool asymmetry;
+
     // random number generator
     std::random_device rd;
     std::mt19937 gen;
 
     void init();
     void sampling_z(const int m, const int n);
+    void update_alpha();
 
 public:
     Lda(const int _K, double _alpha, double _beta,
-            const char *train, const char *test, const char *vocab);
+            const char *train, const char *test, const char *vocab,
+            bool asymmetry);
     ~Lda() = default;
     void inference();
     double perplexity();

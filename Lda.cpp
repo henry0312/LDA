@@ -23,10 +23,12 @@
  * @param const char *train Training set
  * @param const char *test Test set
  * @param const char *vocab Vocabulary
+ * @param bool _asymmetry If true, use Asymmetry Dirichlet distribution"
  */
 Lda::Lda(const int _K, double _alpha, double _beta,
-        const char *train, const char *test, const char *vocab)
-    :dataset(train, vocab), testset(test), K(_K), alpha(_alpha), beta(_beta), gen(rd())
+        const char *train, const char *test, const char *vocab, bool _asymmetry=false)
+    :dataset(train, vocab), testset(test), K(_K), alpha_z(_K, _alpha),
+    beta(_beta), asymmetry(_asymmetry), gen(rd())
 {
     init();
 }
@@ -83,10 +85,20 @@ void Lda::init() {
  * Inference
  */
 void Lda::inference() {
+    /*
+     * Sampling z_mn
+     */
     for (int m = 0; m < dataset.M; m++) {
         for (int n = 0; n < dataset.n_m[m]; n++) {
             sampling_z(m, n);
         }
+    }
+
+    /*
+     * Update hyperparameters
+     */
+    if (asymmetry) {
+        update_alpha();
     }
 }
 
@@ -116,7 +128,7 @@ void Lda::sampling_z(const int m, const int n) {
      */
     std::vector<double> p_z(K);
     for (int z = 0; z < K; z++) {
-        p_z[z] = (alpha + n_m_z[m][z]) * (beta + n_z_t[z][t - 1]) / (n_z[z] + dataset.V * beta);
+        p_z[z] = (alpha_z[z] + n_m_z[m][z]) * (beta + n_z_t[z][t - 1]) / (n_z[z] + dataset.V * beta);
     }
     std::discrete_distribution<> dis(begin(p_z), end(p_z));
     int new_z = dis(gen);
@@ -148,7 +160,7 @@ double Lda::perplexity() {
      */
     for (int m = 0; m < dataset.M; m++) {
         for (int z = 0; z < K; z++) {
-            theta_m_z[m][z] = (alpha + n_m_z[m][z]) / (dataset.n_m[m] + K * alpha);
+            theta_m_z[m][z] = (alpha_z[z] + n_m_z[m][z]) / (dataset.n_m[m] + K * alpha_z[z]);
         }
     }
 
@@ -178,15 +190,30 @@ double Lda::perplexity() {
 void Lda::learn(const int iteration) {
     using namespace std;
 
+    cout.precision(3);
+    cout.setf(ios::fixed);
+
+    /*
+     * Show Initial parameters
+     */
+    cout << "K = " << K << endl;
+    if (asymmetry) {
+        cout << "alpha_z = " << alpha_z[0] << endl;
+    } else {
+        cout << "alpha = " << alpha_z[0] << endl;
+    }
+    cout << "beta = " << beta << endl;
+
     // Start time
     auto start = std::chrono::system_clock::now();
 
     // Inference
+    cout << "iter\tperplexity\n";
     for (int i = 0; i < iteration; i++) {
-        cout << i << "," << perplexity() << endl;
+        cout << i << "\t" << perplexity() << endl;
         inference();
     }
-    cout << iteration << "," << perplexity() << endl;
+    cout << iteration << "\t" << perplexity() << endl;
 
     // End time
     auto end = std::chrono::system_clock::now();
@@ -198,8 +225,17 @@ void Lda::learn(const int iteration) {
     int h = m / 60; m %= 60;
     cout << "Elapsed time: " << h << "h " << m << "m " << s << "." << ms << "s\n" << endl;
 
-    // Dump
+    /*
+     * Dump
+     */
+    // topic-word distribution
     dump();
+    // alpha_z
+    if (asymmetry) {
+        for (int z = 0; z < K; z++) {
+            cout << "alpha_z[" << z << "] = " << alpha_z[z] << endl;
+        }
+    }
 }
 
 /**
@@ -234,5 +270,27 @@ void Lda::dump() {
             printf("%s: %f (%d)\n", dataset.vocab[t].c_str(), phi, n_z_t[z][t]);
         }
         std::cout << std::endl;
+    }
+}
+
+/**
+ * Sampling new alpha
+ */
+void Lda::update_alpha() {
+    using namespace boost::math;
+
+    double sum_alpha = 0.0;
+    for (auto alpha : alpha_z) {
+        sum_alpha += alpha;
+    }
+
+    double numer, denom;
+    for (int z = 0; z < K; z++) {
+        numer = denom = 0.0;
+        for (int m = 0; m < dataset.M; m++) {
+            numer += digamma(n_m_z[m][z] + alpha_z[z]) - digamma(alpha_z[z]);
+            denom += digamma(dataset.n_m[m] + sum_alpha) - digamma(sum_alpha);
+        }
+        alpha_z[z] = alpha_z[z] * numer / denom;
     }
 }
