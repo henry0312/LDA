@@ -62,7 +62,7 @@ public:
     Lda(const int _K, double _alpha, double _beta,
             const char *train, const char *test, const char *vocab,
             bool asymmetry);
-    ~Lda() = default;
+    virtual ~Lda() = default;
     void inference();
     double perplexity();
     void learn(const int iteration);
