@@ -326,7 +326,6 @@ void HdpLda::sampling_k(const int j, const int t) {
     for (int v = 0; v < dataset.V; v++) {
         n_k_v[old_k][v] -= n_j_t_v[j][t][v];
     }
-    m--;
     m_k[old_k]--;
     if (m_k[old_k] == 0) {
         remove_dish(old_k);
@@ -399,7 +398,6 @@ void HdpLda::sampling_k(const int j, const int t) {
      * Update and Increase counters
      */
     k_j_t[j][t] = new_k;
-    m++;
     m_k[new_k]++;
     n_k[new_k] += n_jt;
     for (int v = 0; v < dataset.V; v++) {
@@ -424,7 +422,6 @@ double HdpLda::perplexity() {
      * phi
      */
     phi_k_v.resize(K);
-    phi_k_v[K - 1].resize(dataset.V);
     for (int k = 0; k < K; k++) {
         phi_k_v[k].resize(dataset.V);
         for (int v = 0; v < dataset.V; v++) {
