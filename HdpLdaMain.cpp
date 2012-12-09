@@ -14,7 +14,6 @@
 
 #include <iostream>
 #include <string>
-#include <random>
 #include <boost/program_options.hpp>
 #include "HdpLda.hpp"
 
@@ -49,10 +48,6 @@ int main(int argc, char const* argv[])
         return 1;
     }
 
-    // random number generator
-    std::random_device rd;
-    std::mt19937 gen(rd());
-
     /*
      * Set the parameters
      */
@@ -69,21 +64,15 @@ int main(int argc, char const* argv[])
     double alpha = 0.0;
     if (vm.count("alpha")) {
         alpha = vm["alpha"].as<double>();
-    } else if (vm.count("alpha_shape") || vm.count("alpha_scale")) {
-        std::gamma_distribution<> dist(alpha_shape, alpha_scale);
-        alpha = dist(gen);
     } else {
-        alpha = 0.5;
+        alpha = alpha_shape * alpha_scale; // mean
     }
     // gamma
     double gamma = 0.0;
     if (vm.count("gamma")) {
         gamma = vm["gamma"].as<double>();
-    } else if (vm.count("gamma_shape") || vm.count("gamma_scale")) {
-        std::gamma_distribution<> dist(gamma_shape, gamma_scale);
-        gamma = dist(gen);
     } else {
-        gamma = 0.5;
+        gamma = gamma_shape * gamma_scale; // mean
     }
 
     // HDP-LDA
