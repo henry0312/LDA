@@ -421,37 +421,39 @@ double HdpLda::perplexity() {
     /*
      * phi
      */
-    phi_k_v.resize(K);
+    phi_k_v.resize(K+1);
     for (int k = 0; k < K; k++) {
-        phi_k_v[k].resize(dataset.V);
-        for (int v = 0; v < dataset.V; v++) {
-            phi_k_v[k][v] = (beta + n_k_v[k][v]) / (dataset.V * beta + n_k[k]);
+        if (dishes[k] == 1) {
+            phi_k_v[k].resize(dataset.V);
+            for (int v = 0; v < dataset.V; v++) {
+                phi_k_v[k][v] = (beta + n_k_v[k][v]) / (dataset.V * beta + n_k[k]);
+            }
         }
     }
+    // k^new
+    phi_k_v[K].resize(dataset.V, 1.0/dataset.V);
 
     /*
      * theta
      */
     for (int j = 0; j < dataset.M; j++) {
-        theta_j_k[j].resize(K);
+        theta_j_k[j].resize(K+1);
         // calc n_jk
         for (int t = 0; t < m_j[j]; t++) {
-            if (tables[j][t] == 0) {
-                // not used table
-                continue;
+            if (tables[j][t] == 1) {
+                int k = k_j_t[j][t];
+                theta_j_k[j][k] += n_j_t[j][t];
             }
-            int k = k_j_t[j][t];
-            theta_j_k[j][k] += n_j_t[j][t];
         }
         for (int k = 0; k < K; k++) {
-            if (theta_j_k[j][k] > 0) {
+            if (dishes[k] == 1) {
                 theta_j_k[j][k] += alpha * m_k[k] / (gamma + m);
-                theta_j_k[j][k] /= dataset.n_m[j] + alpha;
-            } else {
-                theta_j_k[j][k] = alpha * gamma / (gamma + m);
                 theta_j_k[j][k] /= dataset.n_m[j] + alpha;
             }
         }
+        // k^new
+        theta_j_k[j][K] = alpha * gamma / (gamma + m);
+        theta_j_k[j][K] /= dataset.n_m[j] + alpha;
     }
 
     /*
@@ -460,10 +462,16 @@ double HdpLda::perplexity() {
     double log_per = 0.0;
     for (int j = 0; j < testset.M; j++) {
         for (int i = 0; i < testset.n_m[j]; i++) {
+            int v = testset.docs[j][i] - 1;
             double sum = 0.0;
             for (int k = 0; k < K; k++) {
-                sum += theta_j_k[j][k] * phi_k_v[k][testset.docs[j][i] - 1];
+                if (dishes[k] == 1) {
+                    sum += theta_j_k[j][k] * phi_k_v[k][v];
+                }
             }
+            // k^new
+            sum += theta_j_k[j][K] * phi_k_v[K][v];
+
             log_per -= log(sum);
         }
     }
@@ -517,17 +525,21 @@ void HdpLda::dump() {
     std::vector<std::vector<std::pair<int, double>>> topic_word;
     topic_word.resize(K);
     for (int k = 0; k < K; k++) {
-        topic_word[k].resize(dataset.V);
-        for (int v = 0; v < dataset.V; v++) {
-            topic_word[k][v] = std::make_pair(v, phi_k_v[k][v]);
+        if (dishes[k] == 1) {
+            topic_word[k].resize(dataset.V);
+            for (int v = 0; v < dataset.V; v++) {
+                topic_word[k][v] = std::make_pair(v, phi_k_v[k][v]);
+            }
         }
     }
 
     // Descending sort
     for (int k = 0; k < K; k++) {
-        std::sort( begin(topic_word[k]), end(topic_word[k]),
-                    [](const std::pair<int, double> &a, const std::pair<int, double> &b)
-                    -> bool { return a.second > b.second; } );
+        if (dishes[k] == 1) {
+            std::sort( begin(topic_word[k]), end(topic_word[k]),
+                        [](const std::pair<int, double> &a, const std::pair<int, double> &b)
+                        -> bool { return a.second > b.second; } );
+        }
     }
 
     // Print
