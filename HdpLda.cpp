@@ -49,7 +49,7 @@ void HdpLda::init() {
 
     // t_j_i
     t_j_i.resize(dataset.M);
-    for (int j = 0; j < dataset.M; j++) {
+    for (int j = 0; j < dataset.M; ++j) {
         // -1 means not assigned
         t_j_i[j].resize(dataset.n_m[j], -1);
     }
@@ -98,8 +98,8 @@ void HdpLda::inference() {
     /*
      * sampling t_ji
      */
-    for (int j = 0; j < dataset.M; j++) {
-        for (int i = 0; i < dataset.n_m[j]; i++) {
+    for (int j = 0; j < dataset.M; ++j) {
+        for (int i = 0; i < dataset.n_m[j]; ++i) {
             sampling_t(j, i);
         }
     }
@@ -107,8 +107,8 @@ void HdpLda::inference() {
     /*
      * sampling k_jt
      */
-    for (int j = 0; j < dataset.M; j++) {
-        for (int t = 0; t < m_j[j]; t++) {
+    for (int j = 0; j < dataset.M; ++j) {
+        for (int t = 0; t < m_j[j]; ++t) {
             if (tables[j][t] == 1) {
                 sampling_k(j, t);
             }
@@ -137,10 +137,10 @@ void HdpLda::sampling_t(const int j, const int i) {
      * Decrease counters
      */
     if (old_t >= 0) {
-        n_k[old_k]--;
-        n_k_v[old_k][v]--;
-        n_j_t[j][old_t]--;
-        n_j_t_v[j][old_t][v]--;
+        --n_k[old_k];
+        --n_k_v[old_k][v];
+        --n_j_t[j][old_t];
+        --n_j_t_v[j][old_t][v];
 
         if (n_j_t[j][old_t] == 0) {
             remove_table(j, old_t);
@@ -152,13 +152,13 @@ void HdpLda::sampling_t(const int j, const int i) {
      */
     // f_k
     std::vector<double> f_k(K);
-    for (int k = 0; k < K; k++) {
+    for (int k = 0; k < K; ++k) {
         f_k[k] = (beta + n_k_v[k][v]) / (dataset.V * beta + n_k[k]);
     }
 
     // p_x
     double p_x = 0.0;
-    for (int k = 0; k < K; k++) {
+    for (int k = 0; k < K; ++k) {
             p_x += m_k[k] * f_k[k];
     }
     p_x += gamma / dataset.V;
@@ -166,7 +166,7 @@ void HdpLda::sampling_t(const int j, const int i) {
 
     // p_t
     std::vector<double> p_t(m_j[j] + 1);
-    for (int t = 0; t < m_j[j]; t++) {
+    for (int t = 0; t < m_j[j]; ++t) {
         p_t[t] = n_j_t[j][t] * f_k[ k_j_t[j][t] ];
     }
     p_t[m_j[j]] = alpha * p_x;
@@ -182,7 +182,7 @@ void HdpLda::sampling_t(const int j, const int i) {
          */
         // p_k_jt^new
         std::vector<double> p_k(K+1);
-        for (int k = 0; k < K; k++) {
+        for (int k = 0; k < K; ++k) {
             p_k[k] = m_k[k] * f_k[k];
         }
         p_k[K] = gamma / dataset.V;
@@ -204,10 +204,10 @@ void HdpLda::sampling_t(const int j, const int i) {
      */
     const int new_k = k_j_t[j][new_t];
     t_j_i[j][i] = new_t;
-    n_j_t[j][new_t]++;
-    n_k[new_k]++;
-    n_k_v[new_k][v]++;
-    n_j_t_v[j][new_t][v]++;
+    ++n_j_t[j][new_t];
+    ++n_k[new_k];
+    ++n_k_v[new_k][v];
+    ++n_j_t_v[j][new_t][v];
 }
 
 /**
@@ -221,8 +221,8 @@ void HdpLda::remove_table(const int j, const int t) {
 
     // Update and Decrease counters
     tables[j][t] = 0;
-    m--;
-    m_k[k]--;
+    --m;
+    --m_k[k];
     if (m_k[k] == 0) {
         remove_dish(k);
     }
@@ -275,8 +275,8 @@ int HdpLda::add_new_table(const int j, const int k) {
     // Update and Increase counters
     tables[j][new_t] = 1;
     k_j_t[j][new_t] = k;
-    m++;
-    m_k[k]++;
+    ++m;
+    ++m_k[k];
 
     return new_t;
 }
@@ -287,7 +287,7 @@ int HdpLda::add_new_table(const int j, const int k) {
  * @return a new dish(topic)
  */
 int HdpLda::get_new_dish() {
-    for (int k = 0; k < K; k++) {
+    for (int k = 0; k < K; ++k) {
         if (dishes[k] == 0) {
             return k;
         }
@@ -301,7 +301,7 @@ int HdpLda::get_new_dish() {
  * @return an empty table
  */
 int HdpLda::get_empty_table(const int j) {
-    for (int t = 0; t < m_j[j]; t++) {
+    for (int t = 0; t < m_j[j]; ++t) {
         if (tables[j][t] == 0) {
             return t;
         }
@@ -323,10 +323,10 @@ void HdpLda::sampling_k(const int j, const int t) {
      * Decrease counters
      */
     n_k[old_k] -= n_jt;
-    for (int v = 0; v < dataset.V; v++) {
+    for (int v = 0; v < dataset.V; ++v) {
         n_k_v[old_k][v] -= n_j_t_v[j][t][v];
     }
-    m_k[old_k]--;
+    --m_k[old_k];
     if (m_k[old_k] == 0) {
         remove_dish(old_k);
     }
@@ -338,17 +338,17 @@ void HdpLda::sampling_k(const int j, const int t) {
     double numer, denom;
     std::priority_queue<double> queue_f_k;
     std::vector<double> f_k(K+1);
-    for (int k = 0; k < K; k++) {
+    for (int k = 0; k < K; ++k) {
         if (m_k[k] == 0) {
             f_k[k] = 1;
             continue;
         }
         numer = denom = 0.0;
-        for (int n = 0; n < n_j_t[j][t]; n++) {
+        for (int n = 0; n < n_j_t[j][t]; ++n) {
             denom += std::log(dataset.V * beta + n_k[k] + n);
         }
-        for (int v = 0; v < dataset.V; v++) {
-            for (int n = 0; n < n_j_t_v[j][t][v]; n++) {
+        for (int v = 0; v < dataset.V; ++v) {
+            for (int n = 0; n < n_j_t_v[j][t][v]; ++n) {
                 numer += std::log(beta + n_k_v[k][v] + n);
             }
         }
@@ -358,11 +358,11 @@ void HdpLda::sampling_k(const int j, const int t) {
 
     // f_k^new
     numer = denom = 0.0;
-    for (int n = 0; n < n_j_t[j][t]; n++) {
+    for (int n = 0; n < n_j_t[j][t]; ++n) {
         denom += std::log(dataset.V * beta + n);
     }
-    for (int v = 0; v < dataset.V; v++) {
-        for (int n = 0; n < n_j_t_v[j][t][v]; n++) {
+    for (int v = 0; v < dataset.V; ++v) {
+        for (int n = 0; n < n_j_t_v[j][t][v]; ++n) {
             numer += std::log(beta + n);
         }
     }
@@ -371,7 +371,7 @@ void HdpLda::sampling_k(const int j, const int t) {
 
     // normalizing
     double max_f_k = queue_f_k.top();
-    for (int k = 0; k < K; k++) {
+    for (int k = 0; k < K; ++k) {
         if (m_k[k] != 0) {
             f_k[k] = std::exp(f_k[k] - max_f_k);
         }
@@ -380,7 +380,7 @@ void HdpLda::sampling_k(const int j, const int t) {
 
     // p_k
     std::vector<double> p_k(K+1);
-    for (int k = 0; k < K; k++) {
+    for (int k = 0; k < K; ++k) {
         p_k[k] = m_k[k] * f_k[k];
     }
     p_k[K] = gamma * f_k[K];
@@ -398,9 +398,9 @@ void HdpLda::sampling_k(const int j, const int t) {
      * Update and Increase counters
      */
     k_j_t[j][t] = new_k;
-    m_k[new_k]++;
+    ++m_k[new_k];
     n_k[new_k] += n_jt;
-    for (int v = 0; v < dataset.V; v++) {
+    for (int v = 0; v < dataset.V; ++v) {
         n_k_v[new_k][v] += n_j_t_v[j][t][v];
     }
 }
@@ -422,10 +422,10 @@ double HdpLda::perplexity() {
      * phi
      */
     phi_k_v.resize(K+1);
-    for (int k = 0; k < K; k++) {
+    for (int k = 0; k < K; ++k) {
         if (dishes[k] == 1) {
             phi_k_v[k].resize(dataset.V);
-            for (int v = 0; v < dataset.V; v++) {
+            for (int v = 0; v < dataset.V; ++v) {
                 phi_k_v[k][v] = (beta + n_k_v[k][v]) / (dataset.V * beta + n_k[k]);
             }
         }
@@ -436,16 +436,16 @@ double HdpLda::perplexity() {
     /*
      * theta
      */
-    for (int j = 0; j < dataset.M; j++) {
+    for (int j = 0; j < dataset.M; ++j) {
         theta_j_k[j].resize(K+1);
         // calc n_jk
-        for (int t = 0; t < m_j[j]; t++) {
+        for (int t = 0; t < m_j[j]; ++t) {
             if (tables[j][t] == 1) {
                 int k = k_j_t[j][t];
                 theta_j_k[j][k] += n_j_t[j][t];
             }
         }
-        for (int k = 0; k < K; k++) {
+        for (int k = 0; k < K; ++k) {
             if (dishes[k] == 1) {
                 theta_j_k[j][k] += alpha * m_k[k] / (gamma + m);
                 theta_j_k[j][k] /= dataset.n_m[j] + alpha;
@@ -460,11 +460,11 @@ double HdpLda::perplexity() {
      * Perplexity
      */
     double log_per = 0.0;
-    for (int j = 0; j < testset.M; j++) {
-        for (int i = 0; i < testset.n_m[j]; i++) {
+    for (int j = 0; j < testset.M; ++j) {
+        for (int i = 0; i < testset.n_m[j]; ++i) {
             int v = testset.docs[j][i] - 1;
             double sum = 0.0;
-            for (int k = 0; k < K; k++) {
+            for (int k = 0; k < K; ++k) {
                 if (dishes[k] == 1) {
                     sum += theta_j_k[j][k] * phi_k_v[k][v];
                 }
@@ -497,7 +497,7 @@ void HdpLda::learn(const int iteration) {
 
     // Inference
     std::cout << "iter\talpha\tgamma\ttopics\tperplexity\n";
-    for (int i = 1; i <= iteration; i++) {
+    for (int i = 1; i <= iteration; ++i) {
         cout << i << "\t" << alpha << "\t" << gamma << "\t";
         inference();
         cout << count_topics() << "\t" << perplexity() << endl;
@@ -524,17 +524,17 @@ void HdpLda::dump() {
     // Insert topic-word distribution to vector
     std::vector<std::vector<std::pair<int, double>>> topic_word;
     topic_word.resize(K);
-    for (int k = 0; k < K; k++) {
+    for (int k = 0; k < K; ++k) {
         if (dishes[k] == 1) {
             topic_word[k].resize(dataset.V);
-            for (int v = 0; v < dataset.V; v++) {
+            for (int v = 0; v < dataset.V; ++v) {
                 topic_word[k][v] = std::make_pair(v, phi_k_v[k][v]);
             }
         }
     }
 
     // Descending sort
-    for (int k = 0; k < K; k++) {
+    for (int k = 0; k < K; ++k) {
         if (dishes[k] == 1) {
             std::sort( begin(topic_word[k]), end(topic_word[k]),
                         [](const std::pair<int, double> &a, const std::pair<int, double> &b)
@@ -543,10 +543,10 @@ void HdpLda::dump() {
     }
 
     // Print
-    for (int k = 0; k < K; k++) {
+    for (int k = 0; k < K; ++k) {
         if (dishes[k] == 1) {
             printf("Topic: %d (%d words)\n", k, n_k[k]);
-            for (int i = 0; i < (n_k[k] > 10 ? 10 : n_k[k]); i++) {
+            for (int i = 0; i < (n_k[k] > 10 ? 10 : n_k[k]); ++i) {
                 auto v = topic_word[k][i].first;
                 auto phi = topic_word[k][i].second;
                 printf("%s: %f (%d)\n", dataset.vocab[v].c_str(), phi, n_k_v[k][v]);
@@ -565,7 +565,7 @@ int HdpLda::count_topics() {
     int topics = 0;
     for (auto k : dishes) {
         if (k == 1) {
-            topics++;
+            ++topics;
         }
     }
     return topics;
@@ -576,9 +576,9 @@ int HdpLda::count_topics() {
  */
 void HdpLda::update_alpha() {
     double sum_log_w, sum_s;
-    for (int step = 0; step < 20; step++) {
+    for (int step = 0; step < 20; ++step) {
         sum_log_w = sum_s = 0.0;
-        for (int j = 0; j < dataset.M; j++) {
+        for (int j = 0; j < dataset.M; ++j) {
             beta_distribution<> beta_dist(alpha + 1, dataset.n_m[j]);
             sum_log_w += std::log( beta_dist(gen) );
 

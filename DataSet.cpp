@@ -68,9 +68,9 @@ void DataSet::loadDataSet(const char *filename) {
     // the following lines : docID wordID count
     int m, v, cnt;
     while ( fin >> m >> v >> cnt ) {
-        for (int i = 0; i < cnt; i++) {
+        for (int i = 0; i < cnt; ++i) {
             docs[m-1].push_back(v);
-            n_m[m-1]++;
+            ++n_m[m-1];
         }
     }
 
