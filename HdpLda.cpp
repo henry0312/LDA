@@ -425,9 +425,10 @@ double HdpLda::perplexity() {
     phi_k_v.resize(K+1);
     for (int k = 0; k < K; ++k) {
         if (dishes[k] == 1) {
-            phi_k_v[k].resize(dataset.V);
+            phi_k_v.clear();
+            phi_k_v[k].reserve(dataset.V);
             for (int v = 0; v < dataset.V; ++v) {
-                phi_k_v[k][v] = (beta + n_k_v[k][v]) / (dataset.V * beta + n_k[k]);
+                phi_k_v[k].push_back( (beta + n_k_v[k][v]) / (dataset.V * beta + n_k[k]) );
             }
         }
     }
@@ -438,11 +439,12 @@ double HdpLda::perplexity() {
      * theta
      */
     for (int j = 0; j < dataset.M; ++j) {
-        theta_j_k[j].resize(K+1);
+        theta_j_k[j].clear();
+        theta_j_k[j].resize(K+1, 0);
         // calc n_jk
         for (int t = 0; t < m_j[j]; ++t) {
             if (tables[j][t] == 1) {
-                int k = k_j_t[j][t];
+                const int k = k_j_t[j][t];
                 theta_j_k[j][k] += n_j_t[j][t];
             }
         }
