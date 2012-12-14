@@ -26,16 +26,16 @@ int main(int argc, char const* argv[])
     // Set options
     options_description opt("Options");
     opt.add_options()
-        ("help,h",                                              "show help")
-        ("topic,K",     value<int>()->default_value(30),        "the number of topics")
-        ("alpha,a",     value<double>()->default_value(0.1),    "alpha")
-        ("beta,b",      value<double>()->default_value(0.01),   "beta")
-        ("seed,s",      value<unsigned int>(),                  "seed value to use in the initialization of the internal state of std::mt19937. if not set, std::random_device is used for the initialization.")
-        ("iteration,i", value<int>()->default_value(10),        "the number of times of inference")
-        ("train",       value<string>(),                        "Training set")
-        ("test",        value<string>(),                        "Test set")
-        ("vocab",       value<string>(),                        "Vocabulary")
-        ("asymmetry",                                           "Use Asymmetry Dirichlet distribution");
+        ("help,h",                                                  "show help")
+        ("topic,K",     value<unsigned int>()->default_value(30),   "the number of topics")
+        ("alpha,a",     value<double>()->default_value(0.1),        "hyperparameter, alpha")
+        ("beta,b",      value<double>()->default_value(0.01),       "hyperparameter, beta")
+        ("seed,s",      value<unsigned int>(),                      "seed value to use in the initialization of the internal state of std::mt19937. if not set, std::random_device is used for the initialization.")
+        ("iteration,i", value<unsigned int>()->default_value(10),   "the number of times of inference")
+        ("train",       value<string>(),                            "Training set")
+        ("test",        value<string>(),                            "Test set")
+        ("vocab",       value<string>(),                            "Vocabulary")
+        ("asymmetry",                                               "Use Asymmetry Dirichlet distribution");
 
     // Parse the arguments and Store the result in vm.
     variables_map vm;
@@ -50,12 +50,12 @@ int main(int argc, char const* argv[])
     /*
      * Set the parameters
      */
-    const int K     = vm["topic"].as<int>();
-    double beta     = vm["beta"].as<double>();
-    const int i     = vm["iteration"].as<int>();
-    string train    = vm["train"].as<string>();
-    string test     = vm["test"].as<string>();
-    string vocab    = vm["vocab"].as<string>();
+    const unsigned int K    = vm["topic"].as<unsigned int>();
+    double beta             = vm["beta"].as<double>();
+    const unsigned int i    = vm["iteration"].as<unsigned int>();
+    string train            = vm["train"].as<string>();
+    string test             = vm["test"].as<string>();
+    string vocab            = vm["vocab"].as<string>();
     // alpha
     double alpha = 0.1;
     if (vm.count("alpha")) {

@@ -83,7 +83,7 @@ public:
     virtual ~HdpLda() = default;
     void inference();
     double perplexity();
-    void learn(const int iteration);
+    void learn(const unsigned int iteration);
     void dump();
     int count_topics();
 };

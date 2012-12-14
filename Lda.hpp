@@ -58,13 +58,12 @@ class Lda {
     void update_alpha();
 
 public:
-    Lda(const int _K, double _alpha, double _beta, unsigned int _seed,
-            const char *train, const char *test, const char *vocab,
-            bool asymmetry);
+    Lda(const unsigned int _K, const double _alpha, const double _beta, unsigned int _seed,
+            const char *train, const char *test, const char *vocab, bool asymmetry);
     virtual ~Lda() = default;
     void inference();
     double perplexity();
-    void learn(const int iteration);
+    void learn(const unsigned int iteration);
     void dump();
 };
 

@@ -26,19 +26,19 @@ int main(int argc, char const* argv[])
     // Set options
     options_description opt("Options");
     opt.add_options()
-        ("help,h",                                              "show help")
-        ("alpha,a",     value<double>(),                        "alpha")
-        ("alpha_shape", value<double>()->default_value(1),      "shape parameter, alpha is drawn from Gamma(alpha_shape, slpha_scale)")
-        ("alpha_scale", value<double>()->default_value(1),      "scale parameter, alpha is drawn from Gamma(alpha_shape, alpha_scale)")
-        ("beta,b",      value<double>()->default_value(0.5),    "beta")
-        ("gamma,g",     value<double>(),                        "gamma")
-        ("gamma_shape", value<double>()->default_value(1),      "shape parameter, gamma is drawn from Gamma(gamma_shape, gamma_scale)")
-        ("gamma_scale", value<double>()->default_value(1),      "scale parameter, gamma is drawn from Gamma(gamma_shape, gamma_scale)")
-        ("seed,s",      value<unsigned int>(),                  "seed value to use in the initialization of the internal state of std::mt19937. if not set, std::random_device is used for the initialization.")
-        ("iteration,i", value<int>()->default_value(10),        "the number of times of inference")
-        ("train",       value<string>(),                        "Training set")
-        ("test",        value<string>(),                        "Test set")
-        ("vocab",       value<string>(),                        "Vocabulary");
+        ("help,h",                                                  "show help")
+        ("alpha,a",     value<double>(),                            "hyperparameter, alpha [alpha_shape * alpha_scale]")
+        ("alpha_shape", value<double>()->default_value(1.0),        "shape parameter, alpha is drawn from Gamma(alpha_shape, slpha_scale)")
+        ("alpha_scale", value<double>()->default_value(1.0),        "scale parameter, alpha is drawn from Gamma(alpha_shape, alpha_scale)")
+        ("beta,b",      value<double>()->default_value(0.5),        "hyperparameter, beta")
+        ("gamma,g",     value<double>(),                            "hyperparameter, gamma [gamma_shape * gamma_scale]")
+        ("gamma_shape", value<double>()->default_value(1.0),        "shape parameter, gamma is drawn from Gamma(gamma_shape, gamma_scale)")
+        ("gamma_scale", value<double>()->default_value(1.0),        "scale parameter, gamma is drawn from Gamma(gamma_shape, gamma_scale)")
+        ("seed,s",      value<unsigned int>(),                      "seed value to use in the initialization of the internal state of std::mt19937. if not set, std::random_device is used for the initialization.")
+        ("iteration,i", value<unsigned int>()->default_value(10),   "the number of times of inference")
+        ("train",       value<string>(),                            "Training set")
+        ("test",        value<string>(),                            "Test set")
+        ("vocab",       value<string>(),                            "Vocabulary");
 
     // Parse the arguments and Store the result in vm.
     variables_map vm;
@@ -53,15 +53,15 @@ int main(int argc, char const* argv[])
     /*
      * Set the parameters
      */
-    double alpha_shape  = vm["alpha_shape"].as<double>();
-    double alpha_scale  = vm["alpha_scale"].as<double>();
-    double beta         = vm["beta"].as<double>();
-    double gamma_shape  = vm["gamma_shape"].as<double>();
-    double gamma_scale  = vm["gamma_scale"].as<double>();
-    const int i         = vm["iteration"].as<int>();
-    string train        = vm["train"].as<string>();
-    string test         = vm["test"].as<string>();
-    string vocab        = vm["vocab"].as<string>();
+    double alpha_shape      = vm["alpha_shape"].as<double>();
+    double alpha_scale      = vm["alpha_scale"].as<double>();
+    double beta             = vm["beta"].as<double>();
+    double gamma_shape      = vm["gamma_shape"].as<double>();
+    double gamma_scale      = vm["gamma_scale"].as<double>();
+    const unsigned int i    = vm["iteration"].as<unsigned int>();
+    string train            = vm["train"].as<string>();
+    string test             = vm["test"].as<string>();
+    string vocab            = vm["vocab"].as<string>();
     // alpha
     double alpha = 0.0;
     if (vm.count("alpha")) {

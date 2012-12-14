@@ -17,11 +17,11 @@
 /**
  * Constructor
  *
- * @param const double _alpha alpha
+ * @param const double _alpha hyperparameter, alpha
  * @param const double _alpha_a shape parameter
  * @param const double _alpha_b scale parameter
- * @param const double _beta beta
- * @param const double _gamma gamma
+ * @param const double _beta hyperparameter, beta
+ * @param const double _gamma hyperparameter, gamma
  * @param const double _gamma_a shape parameter
  * @param const double _gamma_b scale parameter
  * @param const unsigned int _seed seed value
@@ -485,9 +485,9 @@ double HdpLda::perplexity() {
  *
  * Make inferences specified number of times and Calculate perplexity with each cycle
  *
- * @param const int iteration the number of times of inference
+ * @param const unsigned int iteration the number of times of inference
  */
-void HdpLda::learn(const int iteration) {
+void HdpLda::learn(const unsigned int iteration) {
     using namespace std;
 
     cout.precision(3);
