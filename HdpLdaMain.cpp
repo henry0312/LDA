@@ -36,6 +36,7 @@ int main(int argc, char const* argv[])
         ("gamma_scale", value<double>()->default_value(1.0),        "scale parameter, gamma is drawn from Gamma(gamma_shape, gamma_scale)")
         ("seed,s",      value<unsigned int>(),                      "seed value to use in the initialization of the internal state of std::mt19937. if not set, std::random_device is used for the initialization.")
         ("iteration,i", value<unsigned int>()->default_value(10),   "the number of times of inference")
+        ("burn_in",     value<unsigned int>()->default_value(20),   "Burn-in period")
         ("train",       value<string>(),                            "Training set")
         ("test",        value<string>(),                            "Test set")
         ("vocab",       value<string>(),                            "Vocabulary");
@@ -53,15 +54,16 @@ int main(int argc, char const* argv[])
     /*
      * Set the parameters
      */
-    double alpha_shape      = vm["alpha_shape"].as<double>();
-    double alpha_scale      = vm["alpha_scale"].as<double>();
-    double beta             = vm["beta"].as<double>();
-    double gamma_shape      = vm["gamma_shape"].as<double>();
-    double gamma_scale      = vm["gamma_scale"].as<double>();
-    const unsigned int i    = vm["iteration"].as<unsigned int>();
-    string train            = vm["train"].as<string>();
-    string test             = vm["test"].as<string>();
-    string vocab            = vm["vocab"].as<string>();
+    double alpha_shape          = vm["alpha_shape"].as<double>();
+    double alpha_scale          = vm["alpha_scale"].as<double>();
+    double beta                 = vm["beta"].as<double>();
+    double gamma_shape          = vm["gamma_shape"].as<double>();
+    double gamma_scale          = vm["gamma_scale"].as<double>();
+    const unsigned int i        = vm["iteration"].as<unsigned int>();
+    const unsigned int burn_in  = vm["burn_in"].as<unsigned int>();
+    string train                = vm["train"].as<string>();
+    string test                 = vm["test"].as<string>();
+    string vocab                = vm["vocab"].as<string>();
     // alpha
     double alpha = 0.0;
     if (vm.count("alpha")) {
@@ -88,7 +90,7 @@ int main(int argc, char const* argv[])
     // HDP-LDA
     HdpLda hdplda(alpha, alpha_shape, alpha_scale, beta, gamma,
             gamma_shape, gamma_scale, seed, train.c_str(), test.c_str(), vocab.c_str());
-    hdplda.learn(i);
+    hdplda.learn(i, burn_in);
 
     return 0;
 }

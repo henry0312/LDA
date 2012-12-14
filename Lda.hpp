@@ -63,7 +63,7 @@ public:
     virtual ~Lda() = default;
     void inference();
     double perplexity();
-    void learn(const unsigned int iteration);
+    void learn(const unsigned int iteration, const unsigned int burn_in);
     void dump();
 };
 

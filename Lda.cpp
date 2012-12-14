@@ -94,13 +94,6 @@ void Lda::inference() {
             sampling_z(m, n);
         }
     }
-
-    /*
-     * Update hyperparameters
-     */
-    if (asymmetry) {
-        update_alpha();
-    }
 }
 
 /**
@@ -188,8 +181,9 @@ double Lda::perplexity() {
  * Perform Gibbs sampling specified number of times and Calculate perplexity with each cycle
  *
  * @param const unsigned int iteration the number of times of inference
+ * @param const unsigned int burn_in burn-in period
  */
-void Lda::learn(const unsigned int iteration) {
+void Lda::learn(const unsigned int iteration, const unsigned int burn_in) {
     using namespace std;
 
     cout.precision(3);
@@ -213,6 +207,16 @@ void Lda::learn(const unsigned int iteration) {
     cout << "iter\tperplexity\n";
     for (int i = 0; i < iteration; ++i) {
         cout << i << "\t" << perplexity() << endl;
+
+        /*
+         * Update hyperparameters
+         */
+        if (asymmetry) {
+            if (i >= burn_in) {
+                update_alpha();
+            }
+        }
+
         inference();
     }
     cout << iteration << "\t" << perplexity() << endl;

@@ -115,12 +115,6 @@ void HdpLda::inference() {
             }
         }
     }
-
-    /*
-     * Update hyperparameters
-     */
-    update_gamma();
-    update_alpha();
 }
 
 /**
@@ -488,8 +482,9 @@ double HdpLda::perplexity() {
  * Make inferences specified number of times and Calculate perplexity with each cycle
  *
  * @param const unsigned int iteration the number of times of inference
+ * @param const unsigned int burn_in burn-in period
  */
-void HdpLda::learn(const unsigned int iteration) {
+void HdpLda::learn(const unsigned int iteration, const unsigned int burn_in) {
     using namespace std;
 
     cout.precision(3);
@@ -504,6 +499,13 @@ void HdpLda::learn(const unsigned int iteration) {
         cout << i << "\t" << alpha << "\t" << gamma << "\t";
         inference();
         cout << count_topics() << "\t" << perplexity() << endl;
+        /*
+         * Update hyperparameters
+         */
+        if (i > burn_in) {
+            update_gamma();
+            update_alpha();
+        }
     }
 
     // End time
