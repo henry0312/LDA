@@ -170,9 +170,10 @@ double Lda::perplexity() {
     double log_per = 0.0;
     for (int m = 0; m < testset.M; ++m) {
         for (int n = 0; n < testset.n_m[m]; ++n) {
+            const int t = testset.docs[m][n] - 1;
             double sum = 0.0;
             for (int z = 0; z < K; ++z) {
-                sum += theta_m_z[m][z] * phi_z_t[z][testset.docs[m][n] - 1];
+                sum += theta_m_z[m][z] * phi_z_t[z][t];
             }
             log_per -= log(sum);
         }
