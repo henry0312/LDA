@@ -62,7 +62,6 @@ class HdpLda {
     std::vector<std::vector<double>> theta_j_k;
 
     // random number generator
-    std::random_device rd;
     std::mt19937 gen;
 
     void init();
@@ -79,8 +78,8 @@ class HdpLda {
 
 public:
     HdpLda(const double _alpha, const double _alpha_a, const double _alpha_b,
-            const double _beta, const double _gamma, const double _gamma_a,
-            const double _gamma_b, const char *train, const char *test, const char *vocab);
+            const double _beta, const double _gamma, const double _gamma_a, const double _gamma_b,
+            const unsigned int _seed, const char *train, const char *test, const char *vocab);
     virtual ~HdpLda() = default;
     void inference();
     double perplexity();

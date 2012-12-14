@@ -24,15 +24,16 @@
  * @param const double _gamma gamma
  * @param const double _gamma_a shape parameter
  * @param const double _gamma_b scale parameter
+ * @param const unsigned int _seed seed value
  * @param const char *train Training set
  * @param const char *test Test set
  * @param const char *vocab Vocabulary
  */
 HdpLda::HdpLda(const double _alpha, const double _alpha_a, const double _alpha_b,
-        const double _beta, const double _gamma, const double _gamma_a,
-        const double _gamma_b, const char *train, const char *test, const char *vocab)
+        const double _beta, const double _gamma, const double _gamma_a, const double _gamma_b,
+        const unsigned int _seed, const char *train, const char *test, const char *vocab)
     :dataset(train, vocab), testset(test), alpha(_alpha), alpha_a(_alpha_a), alpha_b(_alpha_b),
-    beta(_beta), gamma(_gamma), gamma_a(_gamma_a), gamma_b(_gamma_b), K(0), m(0), gen(rd())
+    beta(_beta), gamma(_gamma), gamma_a(_gamma_a), gamma_b(_gamma_b), K(0), m(0), gen(_seed)
 {
     init();
 }

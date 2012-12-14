@@ -20,15 +20,16 @@
  * @param const int _K the number of Topics
  * @param double _alpha alpha
  * @param double _beta beta
+ * @param const unsigned int _seed seed value
  * @param const char *train Training set
  * @param const char *test Test set
  * @param const char *vocab Vocabulary
- * @param bool _asymmetry If true, use Asymmetry Dirichlet distribution"
+ * @param bool _asymmetry If true, use Asymmetry Dirichlet distribution
  */
-Lda::Lda(const int _K, double _alpha, double _beta,
+Lda::Lda(const int _K, double _alpha, double _beta, const unsigned int _seed,
         const char *train, const char *test, const char *vocab, bool _asymmetry=false)
     :dataset(train, vocab), testset(test), K(_K), alpha_z(_K, _alpha),
-    beta(_beta), asymmetry(_asymmetry), gen(rd())
+    beta(_beta), asymmetry(_asymmetry), gen(_seed)
 {
     init();
 }

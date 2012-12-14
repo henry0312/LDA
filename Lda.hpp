@@ -51,7 +51,6 @@ class Lda {
     bool asymmetry;
 
     // random number generator
-    std::random_device rd;
     std::mt19937 gen;
 
     void init();
@@ -59,7 +58,7 @@ class Lda {
     void update_alpha();
 
 public:
-    Lda(const int _K, double _alpha, double _beta,
+    Lda(const int _K, double _alpha, double _beta, unsigned int _seed,
             const char *train, const char *test, const char *vocab,
             bool asymmetry);
     virtual ~Lda() = default;

@@ -14,6 +14,7 @@
 
 #include <iostream>
 #include <string>
+#include <random>
 #include <boost/program_options.hpp>
 #include "Lda.hpp"
 
@@ -29,6 +30,7 @@ int main(int argc, char const* argv[])
         ("topic,K",     value<int>()->default_value(30),        "the number of topics")
         ("alpha,a",     value<double>()->default_value(0.1),    "alpha")
         ("beta,b",      value<double>()->default_value(0.01),   "beta")
+        ("seed,s",      value<unsigned int>(),                  "seed value to use in the initialization of the internal state of std::mt19937. if not set, std::random_device is used for the initialization.")
         ("iteration,i", value<int>()->default_value(10),        "the number of times of inference")
         ("train",       value<string>(),                        "Training set")
         ("test",        value<string>(),                        "Test set")
@@ -61,6 +63,14 @@ int main(int argc, char const* argv[])
     } else if (K > 50) {
         alpha = 50.0 / K;
     }
+    // seed
+    unsigned int seed = 0;
+    if (vm.count("seed")) {
+        seed = vm["seed"].as<unsigned int>();
+    } else {
+        std::random_device rd;
+        seed = rd();
+    }
     // asymmetry
     bool asymmetry;
     if (vm.count("asymmetry")) {
@@ -70,7 +80,7 @@ int main(int argc, char const* argv[])
     }
 
     // LDA
-    Lda lda(K, alpha, beta, train.c_str(), test.c_str(), vocab.c_str(), asymmetry);
+    Lda lda(K, alpha, beta, seed, train.c_str(), test.c_str(), vocab.c_str(), asymmetry);
     lda.learn(i);
 
     return 0;

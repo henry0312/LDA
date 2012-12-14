@@ -14,6 +14,7 @@
 
 #include <iostream>
 #include <string>
+#include <random>
 #include <boost/program_options.hpp>
 #include "HdpLda.hpp"
 
@@ -33,6 +34,7 @@ int main(int argc, char const* argv[])
         ("gamma,g",     value<double>(),                        "gamma")
         ("gamma_shape", value<double>()->default_value(1),      "shape parameter, gamma is drawn from Gamma(gamma_shape, gamma_scale)")
         ("gamma_scale", value<double>()->default_value(1),      "scale parameter, gamma is drawn from Gamma(gamma_shape, gamma_scale)")
+        ("seed,s",      value<unsigned int>(),                  "seed value to use in the initialization of the internal state of std::mt19937. if not set, std::random_device is used for the initialization.")
         ("iteration,i", value<int>()->default_value(10),        "the number of times of inference")
         ("train",       value<string>(),                        "Training set")
         ("test",        value<string>(),                        "Test set")
@@ -74,10 +76,18 @@ int main(int argc, char const* argv[])
     } else {
         gamma = gamma_shape * gamma_scale; // mean
     }
+    // seed
+    unsigned int seed = 0;
+    if (vm.count("seed")) {
+        seed = vm["seed"].as<unsigned int>();
+    } else {
+        std::random_device rd;
+        seed = rd();
+    }
 
     // HDP-LDA
-    HdpLda hdplda(alpha, alpha_shape, alpha_scale, beta,
-            gamma, gamma_shape, gamma_scale, train.c_str(), test.c_str(), vocab.c_str());
+    HdpLda hdplda(alpha, alpha_shape, alpha_scale, beta, gamma,
+            gamma_shape, gamma_scale, seed, train.c_str(), test.c_str(), vocab.c_str());
     hdplda.learn(i);
 
     return 0;
