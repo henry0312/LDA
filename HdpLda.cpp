@@ -24,29 +24,30 @@
  * @param const double _gamma hyperparameter, gamma
  * @param const double _gamma_a shape parameter
  * @param const double _gamma_b scale parameter
+ * @param const unsigned int _K the number of topics
  * @param const unsigned int _seed seed value
  * @param const char *train Training set
  * @param const char *test Test set
  * @param const char *vocab Vocabulary
  */
-HdpLda::HdpLda(const double _alpha, const double _alpha_a, const double _alpha_b,
-        const double _beta, const double _gamma, const double _gamma_a, const double _gamma_b,
+HdpLda::HdpLda(const double _alpha, const double _alpha_a, const double _alpha_b, const double _beta,
+        const double _gamma, const double _gamma_a, const double _gamma_b, const unsigned int _K,
         const unsigned int _seed, const char *train, const char *test, const char *vocab)
     :dataset(train, vocab), testset(test), alpha(_alpha), alpha_a(_alpha_a), alpha_b(_alpha_b),
-    beta(_beta), gamma(_gamma), gamma_a(_gamma_a), gamma_b(_gamma_b), K(0), m(0), gen(_seed)
+    beta(_beta), gamma(_gamma), gamma_a(_gamma_a), gamma_b(_gamma_b), K(_K), m(0), gen(_seed)
 {
-    init();
+    init_vars();
 }
 
 /**
  * Initialization
  */
-void HdpLda::init() {
+void HdpLda::init_vars() {
     // tables
     tables.resize(dataset.M);
 
     // m_j
-    m_j.resize(dataset.M, 0);
+    m_j.resize(dataset.M);
 
     // t_j_i
     t_j_i.resize(dataset.M);
@@ -70,17 +71,21 @@ void HdpLda::init() {
         }
     }
 
+    // if K == 0, _K is initialised for the initialization of CRF sampling scheme,
+    // otherwise, _K is initialised for random assignment of topics.
+    const int _K = (K == 0) ? 1 : K;
+
     // n_k
-    n_k.resize(1);
+    n_k.resize(_K);
 
     // n_k_v
-    n_k_v.resize(1);
+    n_k_v.resize(_K);
     for (auto& n_v : n_k_v) {
-        n_v.resize(dataset.V, 0);
+        n_v.resize(dataset.V);
     }
 
     // m_k
-    m_k.resize(1, 0);
+    m_k.resize(_K);
 
     // k_jt
     k_j_t.resize(dataset.M);
@@ -90,6 +95,57 @@ void HdpLda::init() {
 
     // theta
     theta_j_k.resize(dataset.M);
+}
+
+/**
+ * Assign topics radomly
+ */
+void HdpLda::assign_random_topic() {
+    dishes.resize(K);
+
+    std::uniform_int_distribution<> dist(0, K-1);
+    for (int j = 0; j < dataset.M; ++j) {
+        // assign a dish
+        k_j_t[j].resize(K);
+        for (int k = 0; k < K; ++k) {
+            // table index == dish index
+            k_j_t[j][k] = k;
+        }
+
+        // initialize variables
+        tables[j].resize(K);
+        t_j_i[j].reserve(dataset.n_m[j]);
+        n_j_t[j].resize(K);
+        n_j_t_v[j].resize(K);
+        for (auto& n_v : n_j_t_v[j]) {
+            n_v.resize(dataset.V);
+        }
+
+        // assign a table
+        for (int i = 0; i < dataset.n_m[j]; ++i) {
+            const int t = dist(gen);
+            const int v = dataset.docs[j][i] - 1;
+            const int k = k_j_t[j][t];
+
+            t_j_i[j][i]     = t;
+            tables[j][t]    = 1;
+            dishes[k]       = 1;
+
+            ++n_j_t[j][t];
+            ++n_j_t_v[j][t][v];
+            ++n_k[k];
+            ++n_k_v[k][v];
+        }
+        m += count_tables(j);
+        m_j[j] = tables[j].size();
+
+        for (int t = 0; t < m_j[j]; ++t) {
+            if (tables[j][t] == 1) {
+                const int k = k_j_t[j][t];
+                ++m_k[k];
+            }
+        }
+    }
 }
 
 /**
@@ -426,7 +482,6 @@ double HdpLda::perplexity() {
             }
         }
     }
-
     /*
      * theta
      */
@@ -485,16 +540,30 @@ void HdpLda::learn(const unsigned int iteration, const unsigned int burn_in) {
     // Start time
     auto start = std::chrono::system_clock::now();
 
-    // Inference
+    /*
+     * Inference
+     */
     std::cout << "iter\talpha\tgamma\ttopics\tperplexity\n";
-    for (int i = 1; i <= iteration; ++i) {
+    // initialization
+    cout << 1 << "\t" << alpha << "\t" << gamma << "\t";
+    if (K == 0) {
+        inference(); // init according to CRF
+    } else {
+        assign_random_topic();
+    }
+    cout << count_topics() << "\t" << perplexity() << endl;
+    if (burn_in < 1) {
+        // Update hyperparameters
+        update_gamma();
+        update_alpha();
+    }
+    // inference
+    for (int i = 2; i <= iteration; ++i) {
         cout << i << "\t" << alpha << "\t" << gamma << "\t";
         inference();
         cout << count_topics() << "\t" << perplexity() << endl;
-        /*
-         * Update hyperparameters
-         */
-        if (i > burn_in) {
+        if (burn_in < i) {
+            // Update hyperparameters
             update_gamma();
             update_alpha();
         }
@@ -567,6 +636,23 @@ int HdpLda::count_topics() {
     }
     return topics;
 }
+
+/**
+ * Get the number of tables
+ *
+ * @param const int j the j-th doc(restaurant)
+ * @return the number of topics
+ */
+int HdpLda::count_tables(const int j) {
+    int table = 0;
+    for (auto t : tables[j]) {
+        if (t == 1) {
+            ++table;
+        }
+    }
+    return table;
+}
+
 
 /**
  * Sampling new alpha

@@ -41,6 +41,7 @@ class HdpLda {
 
     std::vector<std::vector<int>> tables;
     // size of tables in the j-th restaurant, not the number of tables.
+    // i.e. tables[j].size()
     std::vector<int> m_j;
     std::vector<int> dishes;
     int K;  // size of dishes, not the number of topics
@@ -64,7 +65,8 @@ class HdpLda {
     // random number generator
     std::mt19937 gen;
 
-    void init();
+    void init_vars();
+    void assign_random_topic();
     void sampling_t(const int j, const int i);
     void sampling_k(const int j, const int t);
     void remove_table(const int j, const int t);
@@ -77,8 +79,8 @@ class HdpLda {
     void update_gamma();
 
 public:
-    HdpLda(const double _alpha, const double _alpha_a, const double _alpha_b,
-            const double _beta, const double _gamma, const double _gamma_a, const double _gamma_b,
+    HdpLda(const double _alpha, const double _alpha_a, const double _alpha_b, const double _beta,
+            const double _gamma, const double _gamma_a, const double _gamma_b, const unsigned int K,
             const unsigned int _seed, const char *train, const char *test, const char *vocab);
     virtual ~HdpLda() = default;
     void inference();
@@ -86,6 +88,7 @@ public:
     void learn(const unsigned int iteration, const unsigned int burn_in);
     void dump();
     int count_topics();
+    int count_tables(const int j);
 };
 
 #endif
