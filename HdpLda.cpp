@@ -416,7 +416,7 @@ double HdpLda::perplexity() {
     /*
      * phi
      */
-    phi_k_v.resize(K+1);
+    phi_k_v.resize(K);
     for (int k = 0; k < K; ++k) {
         if (dishes[k] == 1) {
             phi_k_v.clear();
@@ -426,15 +426,13 @@ double HdpLda::perplexity() {
             }
         }
     }
-    // k^new
-    phi_k_v[K].resize(dataset.V, 1.0/dataset.V);
 
     /*
      * theta
      */
     for (int j = 0; j < dataset.M; ++j) {
         theta_j_k[j].clear();
-        theta_j_k[j].resize(K+1, 0);
+        theta_j_k[j].resize(K);
         // calc n_jk
         for (int t = 0; t < m_j[j]; ++t) {
             if (tables[j][t] == 1) {
@@ -448,9 +446,6 @@ double HdpLda::perplexity() {
                 theta_j_k[j][k] /= dataset.n_m[j] + alpha;
             }
         }
-        // k^new
-        theta_j_k[j][K] = alpha * gamma / (gamma + m);
-        theta_j_k[j][K] /= dataset.n_m[j] + alpha;
     }
 
     /*
@@ -466,9 +461,6 @@ double HdpLda::perplexity() {
                     sum += theta_j_k[j][k] * phi_k_v[k][v];
                 }
             }
-            // k^new
-            sum += theta_j_k[j][K] * phi_k_v[K][v];
-
             log_per -= log(sum);
         }
     }
