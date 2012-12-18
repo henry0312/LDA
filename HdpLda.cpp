@@ -553,7 +553,7 @@ void HdpLda::learn(const unsigned int iteration, const unsigned int burn_in) {
         update_alpha();
     }
     // inference
-    for (int i = 2; i <= iteration; ++i) {
+    for (unsigned int i = 2; i <= iteration; ++i) {
         cout << i << "\t" << alpha << "\t" << gamma << "\t";
         inference();
         cout << count_topics() << "\t" << perplexity() << endl;

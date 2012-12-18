@@ -205,7 +205,7 @@ void Lda::learn(const unsigned int iteration, const unsigned int burn_in) {
 
     // Inference
     cout << "iter\tperplexity\n";
-    for (int i = 0; i < iteration; ++i) {
+    for (unsigned int i = 0; i < iteration; ++i) {
         cout << i << "\t" << perplexity() << endl;
 
         /*
