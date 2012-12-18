@@ -185,8 +185,6 @@ double Lda::perplexity() {
  */
 void Lda::learn(const unsigned int iteration, const unsigned int burn_in) {
     using namespace std;
-
-    cout.precision(3);
     cout.setf(ios::fixed);
 
     /*
@@ -194,16 +192,17 @@ void Lda::learn(const unsigned int iteration, const unsigned int burn_in) {
      */
     cout << "K = " << K << endl;
     if (asymmetry) {
-        cout << "alpha_z = " << alpha_z[0] << endl;
+        cout << setprecision(6) << "alpha_z = " << alpha_z[0] << endl;
     } else {
-        cout << "alpha = " << alpha_z[0] << endl;
+        cout << setprecision(6) << "alpha = " << alpha_z[0] << endl;
     }
-    cout << "beta = " << beta << endl;
+    cout << setprecision(6) << "beta = " << beta << endl;
 
     // Start time
     auto start = std::chrono::system_clock::now();
 
     // Inference
+    cout.precision(3);
     cout << "iter\tperplexity\n";
     for (unsigned int i = 0; i < iteration; ++i) {
         cout << i << "\t" << perplexity() << endl;
@@ -238,6 +237,7 @@ void Lda::learn(const unsigned int iteration, const unsigned int burn_in) {
     dump();
     // alpha_z
     if (asymmetry) {
+        cout.precision(6);
         for (int z = 0; z < K; ++z) {
             cout << "alpha_z[" << z << "] = " << alpha_z[z] << endl;
         }
