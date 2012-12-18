@@ -46,9 +46,6 @@ void HdpLda::init_vars() {
     // tables
     tables.resize(dataset.M);
 
-    // m_j
-    m_j.resize(dataset.M);
-
     // t_j_i
     t_j_i.resize(dataset.M);
     for (int j = 0; j < dataset.M; ++j) {
@@ -137,9 +134,8 @@ void HdpLda::assign_random_topic() {
             ++n_k_v[k][v];
         }
         m += count_tables(j);
-        m_j[j] = tables[j].size();
 
-        for (int t = 0; t < m_j[j]; ++t) {
+        for (unsigned int t = 0; t < tables[j].size(); ++t) {
             if (tables[j][t] == 1) {
                 const int k = k_j_t[j][t];
                 ++m_k[k];
@@ -165,7 +161,7 @@ void HdpLda::inference() {
      * sampling k_jt
      */
     for (int j = 0; j < dataset.M; ++j) {
-        for (int t = 0; t < m_j[j]; ++t) {
+        for (unsigned int t = 0; t < tables[j].size(); ++t) {
             if (tables[j][t] == 1) {
                 sampling_k(j, t);
             }
@@ -216,18 +212,18 @@ void HdpLda::sampling_t(const int j, const int i) {
     p_x /= gamma + m;
 
     // p_t
-    std::vector<double> p_t(m_j[j] + 1);
-    for (int t = 0; t < m_j[j]; ++t) {
+    std::vector<double> p_t(tables[j].size() + 1);
+    for (unsigned int t = 0; t < tables[j].size(); ++t) {
         p_t[t] = n_j_t[j][t] * f_k[ k_j_t[j][t] ];
     }
-    p_t[m_j[j]] = alpha * p_x;
+    p_t[tables[j].size()] = alpha * p_x;
 
     // sampling
     std::discrete_distribution<> dis_p_t(begin(p_t), end(p_t));
-    int new_t = dis_p_t(gen);
+    unsigned int new_t = dis_p_t(gen);
 
     // new_t == t^new
-    if (new_t  == m_j[j]) {
+    if (new_t  == tables[j].size()) {
         /*
          * Sampling k_jt^new
          */
@@ -311,12 +307,11 @@ int HdpLda::assign_new_dish() {
  * @return a new table(new_t)
  */
 int HdpLda::add_new_table(const int j, const int k) {
-    const int new_t = get_empty_table(j);
+    const unsigned int new_t = get_empty_table(j);
 
     // new table
-    if (new_t == m_j[j]) {
+    if (new_t == tables[j].size()) {
         tables[j].resize(new_t + 1);
-        m_j[j] = tables[j].size();
         k_j_t[j].resize(new_t + 1);
         n_j_t[j].resize(new_t + 1);
         n_j_t_v[j].resize(new_t + 1);
@@ -352,7 +347,7 @@ int HdpLda::get_new_dish() {
  * @return an empty table
  */
 int HdpLda::get_empty_table(const int j) {
-    for (int t = 0; t < m_j[j]; ++t) {
+    for (unsigned int t = 0; t < tables[j].size(); ++t) {
         if (tables[j][t] == 0) {
             return t;
         }
@@ -475,7 +470,7 @@ double HdpLda::perplexity() {
     phi_k_v.resize(K);
     for (int k = 0; k < K; ++k) {
         if (dishes[k] == 1) {
-            phi_k_v.clear();
+            phi_k_v[k].clear();
             phi_k_v[k].reserve(dataset.V);
             for (int v = 0; v < dataset.V; ++v) {
                 phi_k_v[k].push_back( (beta + n_k_v[k][v]) / (dataset.V * beta + n_k[k]) );
@@ -489,7 +484,7 @@ double HdpLda::perplexity() {
         theta_j_k[j].clear();
         theta_j_k[j].resize(K);
         // calc n_jk
-        for (int t = 0; t < m_j[j]; ++t) {
+        for (unsigned int t = 0; t < tables[j].size(); ++t) {
             if (tables[j][t] == 1) {
                 const int k = k_j_t[j][t];
                 theta_j_k[j][k] += n_j_t[j][t];

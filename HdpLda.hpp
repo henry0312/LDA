@@ -39,12 +39,9 @@ class HdpLda {
     const double gamma_a; // shape parameter
     const double gamma_b; // scale parameter
 
-    std::vector<std::vector<int>> tables;
-    // size of tables in the j-th restaurant, not the number of tables.
-    // i.e. tables[j].size()
-    std::vector<int> m_j;
-    std::vector<int> dishes;
-    int K;  // size of dishes, not the number of topics
+    std::vector<std::vector<int>> tables; // using tables
+    std::vector<int> dishes; // using dishes
+    int K;  // size of dishes, not the number of topics. i.e. dishes.size()
 
     std::vector<std::vector<int>> t_j_i;
 
